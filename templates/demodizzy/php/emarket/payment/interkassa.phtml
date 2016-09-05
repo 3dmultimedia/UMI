@@ -1,0 +1,31 @@
+<?php /** @var umiTemplaterPHP $this */ ?>
+<?php /** @var array $variables */ ?>
+<?php 
+/**
+* Interkassa payment form .phtml
+* @author www.gateon.net E-mail: www@smartbyte.pro
+* @package UMI CMS version 2.x (testing for 2.14 version)
+* @version 1.0
+*/
+?>
+<form action="https://sci.interkassa.com/" method="post">
+	<input type="hidden" name="ik_co_id" value="<?= $variables['purchase']['purchasing']['ik_co_id'] ?>" />
+	<input type="hidden" name="ik_am" value="<?= $variables['purchase']['purchasing']['ik_am'] ?>" />
+	<input type="hidden" name="ik_pm_no" value="<?= $variables['purchase']['purchasing']['ik_pm_no'] ?>" />
+	<input type="hidden" name="ik_cur" value="<?= $variables['purchase']['purchasing']['ik_cur'] ?>" />
+	<input type="hidden" name="ik_desc" value="<?= $variables['purchase']['purchasing']['ik_desc'] ?>" />
+	<input type="hidden" name="ik_ia_u" value="<?= $variables['purchase']['purchasing']['ik_ia_u'] ?>" />
+	<input type="hidden" name="ik_sign" value="<?= $variables['purchase']['purchasing']['sign'] ?>" />
+
+	<div>
+		<?= $this->translate('payment-redirect-text') ?> Interkassa
+	</div>
+
+	<div>
+		<img src="/images/payment/interkassa.gif" align="left"/>
+	</div>
+
+	<div>
+		<input type="submit" value="<?= $this->translate('pay') ?>" class="button big"/>
+	</div>
+</form>
