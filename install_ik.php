@@ -17,7 +17,7 @@
     // Создаем внутренний объект
     $internalObjectId = $objectsCollection->addObject($paymentName, $internalTypeId);
     $internalObject = $objectsCollection->getObject($internalObjectId);
-    $internalObject->setValue("interkassa", $className); // имя класса для реализации
+    $internalObject->setValue("class_name", $className); // имя класса для реализации
  
     // связываем его с типом
     $internalObject->setValue("payment_type_id", $typeId);
