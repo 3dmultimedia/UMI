@@ -29,5 +29,5 @@
     $type->setGUID($internalObject->getValue("payment_type_guid"));
     $type->commit();
  
-    echo "Готово!";
+    echo "done!";
 ?>
