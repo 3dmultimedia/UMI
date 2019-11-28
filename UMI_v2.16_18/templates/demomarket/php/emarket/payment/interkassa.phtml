@@ -5,7 +5,7 @@
 * @package UMI CMS version 18
 * @version 1.0
 */
-$data = $variables['purchasing'];
+//$data = $variables['purchasing'];
 $path = "/templates/demomarket/img/interkassa/";
 $httpScheme = 'http://';
 if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) {
@@ -15,31 +15,36 @@ $collection = domainsCollection::getInstance();
 $domain = $collection->getDefaultDomain();
 $host = $httpScheme.$domain->getHost();
 ?>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 <link href="/templates/demomarket/css/umi_interkassa.css" rel="stylesheet" type="text/css" />
 <form action="https://sci.interkassa.com/" method="post" id="umi-ik-checkout">
-	<input type="hidden" name="ik_co_id" value="<?= $data['ik_co_id'] ?>" />
-	<input type="hidden" name="ik_am" value="<?= $data['ik_am'] ?>" />
-	<input type="hidden" name="ik_pm_no" value="<?= $data['ik_pm_no'] ?>" />
-	<input type="hidden" name="ik_cur" value="<?= $data['ik_cur'] ?>" />
-	<input type="hidden" name="ik_desc" value="<?= $data['ik_desc'] ?>" />
-    <input type="hidden" name="ik_suc_u" value="<?= $data['ik_suc_u'] ?>" />
-    <input type="hidden" name="ik_fal_u" value="<?= $data['ik_fal_u'] ?>" />
-    <input type="hidden" name="ik_pnd_u" value="<?= $data['ik_pnd_u'] ?>" />
-	<input type="hidden" name="ik_ia_u" value="<?= $data['ik_ia_u'] ?>" />
-	<?php if (isset($data['ik_pw_via']) && $data['ik_pw_via'] == 'test_interkassa_test_xts') { ?>
-		<input type="hidden" name="ik_pw_via" value="<?= $data['ik_pw_via'] ?>" />
+	<input type="hidden" name="ik_co_id" value="<?= $variables['purchase']['purchasing']['ik_co_id'] ?>" />
+	<input type="hidden" name="ik_am" value="<?= $variables['purchase']['purchasing']['ik_am'] ?>" />
+	<input type="hidden" name="ik_pm_no" value="<?= $variables['purchase']['purchasing']['ik_pm_no'] ?>" />
+	<input type="hidden" name="ik_cur" value="<?= $variables['purchase']['purchasing']['ik_cur'] ?>" />
+	<input type="hidden" name="ik_desc" value="<?= $variables['purchase']['purchasing']['ik_desc'] ?>" />
+    <input type="hidden" name="ik_suc_u" value="<?= $variables['purchase']['purchasing']['ik_suc_u'] ?>" />
+    <input type="hidden" name="ik_fal_u" value="<?= $variables['purchase']['purchasing']['ik_fal_u'] ?>" />
+    <input type="hidden" name="ik_pnd_u" value="<?= $variables['purchase']['purchasing']['ik_pnd_u'] ?>" />
+	<input type="hidden" name="ik_ia_u" value="<?= $variables['purchase']['purchasing']['ik_ia_u'] ?>" />
+	<?php if (isset($variables['purchase']['purchasing']['ik_pw_via']) && $variables['purchase']['purchasing']['ik_pw_via'] == 'test_interkassa_test_xts') { ?>
+		<input type="hidden" name="ik_pw_via" value="<?= $variables['purchase']['purchasing']['ik_pw_via'] ?>" />
 	<?php } ?>
-	<?php if (is_array($data['payments_systems']) && !empty($data['payments_systems'])) { ?>
+	<?php if (is_array($variables['purchase']['purchasing']['payments_systems']) && !empty($variables['purchase']['purchasing']['payments_systems'])) { ?>
 		<input type="hidden" name="payment_metod" value="" />
-		<input type="hidden" name="paymentId" value="<?= $data['paymentId'] ?>" />
+		<input type="hidden" name="paymentId" value="<?= $variables['purchase']['purchasing']['paymentId'] ?>" />
 	<?php } ?>
-	<input type="hidden" name="ik_sign" value="<?= $data['ik_sign'] ?>" />
+	<input type="hidden" name="ik_sign" value="<?= $variables['purchase']['purchasing']['ik_sign'] ?>" />
 	<div>
 		<img src="/images/payment/ik_logo.gif" align="left" alt="<?= $this->translate('Интеркасса') ?>" width="210px"/>
 	</div>
 
 	<div class="clearfix"></div>
-	<?php if (empty($data['payments_systems'])) { ?>
+	<?php if (empty($variables['purchase']['purchasing']['payments_systems'])) { ?>
 		<div>
 			<input type="submit" value="<?= $this->translate('pay') ?>" class="button big"/>
 		</div>
@@ -47,7 +52,7 @@ $host = $httpScheme.$domain->getHost();
 
 </form>
 
-<?php	if (is_array($data['payments_systems']) && !empty($data['payments_systems'])) { ?>
+<?php	if (is_array($variables['purchase']['purchasing']['payments_systems']) && !empty($variables['purchase']['purchasing']['payments_systems'])) { ?>
 	<div>
 		<button  id="InterkassaModalButton" class="sel-ps-ik btn btn-info btn-lg" data-toggle="modal" data-target="#InterkassaModal"><?= $this->translate('Выберите метод оплаты') ?></button>
 	</div>
@@ -62,7 +67,7 @@ $host = $httpScheme.$domain->getHost();
 						3. <?= $this->translate('Нажмите &laquo;Оплатить&raquo;'); ?><br>
 					</h3>
 					<div class="row">
-						<?php foreach ($data['payments_systems'] as $ps => $info) { ?>
+						<?php foreach ($variables['purchase']['purchasing']['payments_systems'] as $ps => $info) { ?>
 							<div class="col-sm-3 text-center payment_system">
 								<div class="panel panel-warning panel-pricing">
 									<div class="panel-heading">

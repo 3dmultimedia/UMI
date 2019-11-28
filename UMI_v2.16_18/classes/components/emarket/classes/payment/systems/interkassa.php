@@ -37,6 +37,10 @@ class interkassaPayment extends payment {
 		if($currency == 'RUR'){
 			$currency = 'RUB';
 		}
+		
+		//===================================
+		$currency = 'UAH';
+		//===================================
 
 
 		//initialize global params for interkassa form
@@ -61,7 +65,7 @@ class interkassaPayment extends payment {
 		if ($this->object->test_mode) {
 			$param["ik_pw_via"] ='test_interkassa_test_xts';
 		}
-		elseif ($param["api_mode"]) {
+		if ($param["api_mode"]) {
 			$param["ik_act"] ='payways';
 			$param["ik_int"] ='json';
 			$param["api_id"] = $this->object->api_id;
@@ -72,8 +76,13 @@ class interkassaPayment extends payment {
         $param["ik_sign"] = $this->createSign($param,$this->object->secret_key);
 		//add order into system
 		$this->order->setPaymentStatus('initialized');
-		list($templateString) = def_module::loadTemplates("emarket/payment/interkassa/".$template, "form_block");
-		return def_module::parseTemplate($templateString, $param);
+		$data = $param;
+ 
+		
+		        list($form_block) =
+            def_module::loadTemplates('emarket/payment/interkassa/' . $template, 'form_block');
+
+        return def_module::parseTemplate($form_block, $param);
 	}
 
 	/**
@@ -209,20 +218,29 @@ class interkassaPayment extends payment {
 	{
 		$ip_stack = array(
 			'ip_begin' => '151.80.190.97',
-			'ip_end' => '151.80.190.104'
+			'ip_end' => '35.233.69.55'
 		);
 		return (ip2long($_SERVER['REMOTE_ADDR'])>=ip2long($ip_stack['ip_begin']) &&
 				ip2long($_SERVER['REMOTE_ADDR'])<=ip2long($ip_stack['ip_end']));
 	}
 	public function getPaymentsAPI($data) {
-		$payment_systems = array();
+	    $payment_systems = array();
 		if ($data['api_mode']) {
 			$host = "https://api.interkassa.com/v1/paysystem-input-payway?checkoutId=" . $data['ik_co_id'];
 			$username = $data['api_id'];
 			$password = $data['api_key'];
+			$businessAcc = $this->getIkBusinessAcc($username, $password);
+			
+			$ikHeaders = [];
+            $ikHeaders[] = "Authorization: Basic " . base64_encode("$username:$password");
+            if (!empty($businessAcc)) {
+                $ikHeaders[] = "Ik-Api-Account-Id: " . $businessAcc;
+            }
+			
+			
 			$ch = curl_init($host);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization:Basic ' . base64_encode("$username:$password")));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $ikHeaders);
 			$response = curl_exec($ch);
 			if(isset($response) && $response) {
 				$returnInter = json_decode($response);
@@ -251,7 +269,108 @@ class interkassaPayment extends payment {
 			}
 		}
 		return $payment_systems;
+	
 	}
+	    
+	    
+	    
+	    
+	    /*
+	     $username = $data['api_id'];
+        $password = $data['api_key'];
+        $remote_url = 'https://api.interkassa.com/v1/paysystem-input-payway?checkoutId='.$ik_co_id;
+        
+        $businessAcc = $this->getIkBusinessAcc($username, $password);
+   
+            
+        $ikHeaders = [];
+        $ikHeaders[] = "Authorization: Basic " . base64_encode("$username:$password");
+        if (!empty($businessAcc)) {
+            $ikHeaders[] = "Ik-Api-Account-Id: " . $businessAcc;
+        }
+                
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $remote_url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $ikHeaders);
+        $response = curl_exec($ch);
+        $json_data = json_decode($response);
+        
+        if (empty($json_data))
+            echo'<strong style="color:red;">Error!!! System response empty!</strong>';
+
+            if ($json_data->status != 'error') {
+                $payment_systems = array();
+                if (!empty($json_data->data)) {
+                    
+                    foreach ($json_data->data as $ps => $info) {
+                        $payment_system = $info->ser;
+                        if (!array_key_exists($payment_system, $payment_systems)) {
+                            $payment_systems[$payment_system] = array();
+                            foreach ($info->name as $name) {
+                                if ($name->l == 'en') {
+                                    $payment_systems[$payment_system]['title'] = ucfirst($name->v);
+                                }
+                                $payment_systems[$payment_system]['name'][$name->l] = $name->v;
+                            }
+                        }
+                        $payment_systems[$payment_system]['currency'][strtoupper($info->curAls)] = $info->als;
+                    }
+                }
+                    
+                return !empty($payment_systems) ? $payment_systems : '<strong style="color:red;">API connection error or system response empty!</strong>';
+            } else {
+                if (!empty($json_data->message))
+                    echo '<strong style="color:red;">API connection error!<br>' . $json_data->message . '</strong>';
+                else
+                    echo '<strong style="color:red;">API connection error or system response empty!</strong>';
+            }
+            return $payment_systems;
+        }*/
+	/*
+		 */
+	  public function getIkBusinessAcc($username = '', $password = '')         {
+            $tmpLocationFile = __DIR__ . '/tmpLocalStorageBusinessAcc.ini';
+            $dataBusinessAcc = function_exists('file_get_contents') ? file_get_contents($tmpLocationFile) : '{}';
+            $dataBusinessAcc = json_decode($dataBusinessAcc, 1);
+            $businessAcc = is_string($dataBusinessAcc['businessAcc']) ? trim($dataBusinessAcc['businessAcc']) : '';
+            if (empty($businessAcc) || sha1($username . $password) !== $dataBusinessAcc['hash']) {
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, 'https://api.interkassa.com/v1/' . 'account');
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+                curl_setopt($curl, CURLOPT_HEADER, false);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, ["Authorization: Basic " . base64_encode("$username:$password")]);
+                $response = curl_exec($curl);
+                $response = json_decode($response,1);
+
+
+                if (!empty($response['data'])) {
+                    foreach ($response['data'] as $id => $data) {
+                        if ($data['tp'] == 'b') {
+                            $businessAcc = $id;
+                            break;
+                        }
+                    }
+                }
+
+                if (function_exists('file_put_contents')) {
+                    $updData = [
+                        'businessAcc' => $businessAcc,
+                        'hash' => sha1($username . $password)
+                    ];
+                    file_put_contents($tmpLocationFile, json_encode($updData, JSON_PRETTY_PRINT));
+                }
+
+                return $businessAcc;
+            }
+
+            return $businessAcc;
+    }
 
 };
 ?>
